@@ -1,0 +1,44 @@
+[
+  {
+    "tile_size": "3x3",
+    "FUs": {
+      "tile0": [
+        "Ld",
+        "Add"
+      ],
+      "tile1": [
+        "Ld",
+        "Mul"
+      ],
+      "tile2": [
+        "St"
+      ],
+      "tile3": [
+        "Add",
+        "Cmp"
+      ],
+      "tile4": [
+        "Add",
+        "Mul"
+      ],
+      "tile5": [
+        "Add",
+        "Phi"
+      ],
+      "tile6": [
+        "Br"
+      ],
+      "tile7": [
+        "Mul"
+      ],
+      "tile8": [
+        "St",
+        "Logic"
+      ]
+    },
+    "config_mem": 12,
+    "data_spm_kb": 64,
+    "unroll_factor": 4,
+    "vectorize": "interleaved"
+  }
+]

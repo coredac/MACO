@@ -1,0 +1,9 @@
+# 忽略不上传的文件夹
+tool/
+verilog_tool/
+results/
+
+# 你也可以加一些常见忽略项
+__pycache__/
+*.log
+*.tmp

@@ -1,0 +1,193 @@
+import random
+import math
+from copy import deepcopy
+import json
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agent")))
+
+from ArchDesigner import generate_cgra_candidates  # 从上级 agent 目录导入
+from Mapfixer import map_fixer_llm  # 从上级 agent 目录导入
+from Expertjudge import ExpertJudgeAgent  # 从上级 agent 目录导入
+from Expertjudge_2 import ExpertJudge2Agent  # 从上级 agent 目录导入
+from algorithm2 import DesignSelector 
+from Heuristic_judge import HeuristicJudge
+from algorithm1 import decaying_epsilon_greedy_CGRA
+
+# input
+# kernel = "fir"
+# DFG_node_counts = {"Add": 4, "Mul": 1, "Ld": 3, "St": 1, "Cmp": 1, "Phi": 1, "Br": 1}
+# max_independent_ops_per_cycle = 4
+# vectorizable_ops = ["Add", "Mul"]
+# optimization_goal = "power"
+# model = "qwen-plus"
+kernel = "conv"
+DFG_node_counts = {'Ld': 2, 'St': 0, 'Cmp': 1, 'Phi': 2, 'Br': 1, 'Sel': 0, 'Ret': 0, 'Add': 4, 'Mul': 1, 'Div': 1,'Logic':1}
+max_independent_ops_per_cycle = 4
+vectorizable_ops = ["Add", "Mul"]
+optimization_goal = "power"
+model = "qwen-plus"
+
+# stage 1: Archdesigner
+for model in [model]:
+    print(f"\n=== Iteration 1: Start===\n")
+    candidates = generate_cgra_candidates(
+        kernel,
+        DFG_node_counts,
+        max_independent_ops_per_cycle,
+        vectorizable_ops,
+        optimization_goal,
+        N=3,
+        model=model
+    )
+    # 去掉 reasoning 字段
+    candidates_no_reason = []
+    for c in candidates:
+        c_copy = {k: v for k, v in c.items() if k != "reasoning"}
+        candidates_no_reason.append(c_copy)
+    
+    with open("../results/cgra_candidates_raw.json", "w") as f:
+        json.dump(candidates_no_reason, f, indent=2)
+
+print("\n✅ Iteration 1(stage 1): ArchDesigner finished, raw JSON saved to cgra_candidates_raw.json\n")
+
+# stage 2: Mapfixer
+
+with open("../results/cgra_candidates_raw.json", "r") as f:
+    candidates = json.load(f)
+    # 进行 Mapfixer 的处理
+    fixed_candidates = map_fixer_llm(
+        candidates,
+        kernel,
+        DFG_node_counts,
+        max_independent_ops_per_cycle,
+        vectorizable_ops,
+        optimization_goal,
+        model=model
+    )
+
+    # 输出修复后的 JSON
+    with open("../results/cgra_candidates_fixed.json", "w") as f:
+        json.dump(fixed_candidates, f, indent=2)
+
+    print("\n✅ Iteration 1(stage 2): MapFixer finished, fixed JSON saved to cgra_candidates_fixed.json\n")
+
+# stage 3-1: ExpertJudge and ExpertJudge_2
+with open("../results/cgra_candidates_fixed.json", "r") as f:
+    fixed_candidates = json.load(f)
+    fixed_candidates = json.dumps(fixed_candidates, separators=(',', ':'))
+# 进行 ExpertJudge 的处理
+judge_agent = ExpertJudgeAgent(model=model)
+top_designs = judge_agent.judge_designs(fixed_candidates, optimization_goal=optimization_goal, top_k=2)
+with open("../results/cgra_top_k.json", "w") as f:
+    json.dump(top_designs, f, indent=2)
+print("\n✅ Iteration 1(stage 3-1): ExpertJudge finished, top designs saved to cgra_top_k.json\n")
+
+# stage 3-2: ExpertJudge_2
+
+# No algorithm
+# with open("../results/cgra_top_k.json", "r") as f:
+#         topk_designs = json.load(f)
+# # 转成紧凑格式的 JSON 字符串
+# topk_designs = json.dumps(topk_designs, separators=(',', ':'))
+# judge2_agent = ExpertJudge2Agent(model=model)
+# best_design = judge2_agent.select_best(topk_designs, optimization_goal=optimization_goal)
+# with open("../results/cgra_best_design.json", "w") as f:
+#     json.dump(best_design, f, indent=2)
+
+# with algorithm2
+import json
+from pathlib import Path
+
+json_files = [
+    "../results/cgra_best_design.json",
+    "../results/cgra_top_k.json"
+]
+
+kernel_path = "/WORK_REPO/CGRA-Flow/CGRA-Mapper/test/kernels/conv/conv.c"
+
+for file_path in json_files:
+    path = Path(file_path)
+    if not path.exists():
+        print(f"文件不存在: {file_path}")
+        continue
+
+    # 读取原 JSON
+    with open(path, "r") as f:
+        designs = json.load(f)
+
+    # 如果是单个 dict，包装成列表
+    if isinstance(designs, dict):
+        designs = [designs]
+        single_object = True
+    else:
+        single_object = False
+
+    # 给每个设计加上 kernel 字段
+    for design in designs:
+        if isinstance(design, dict):
+            design["kernel"] = kernel_path
+        else:
+            print(f"跳过非字典条目: {design}")
+
+    # 如果原本是单个对象，保存回去时解包成 dict
+    save_data = designs[0] if single_object else designs
+
+    # 保存回原文件
+    with open(path, "w") as f:
+        json.dump(save_data, f, indent=4)
+
+    print(f"已更新 {file_path}，每个设计添加 kernel 字段")
+
+
+with open("../results/cgra_top_k.json", "r") as f:
+    K_designs = json.load(f)
+
+selector = DesignSelector(model=model)
+result = selector.run_once(K_designs, optimization_goal=optimization_goal)
+print(result)
+# 保存历史
+with open("../results/final_choices.json", "w") as f:
+    json.dump(result["final_choice"], f, indent=2)
+print("\n✅ Iteration 1(stage 3-2): ExpertJudge_2 with algorithm2 finished, best design saved to final_choices.json\n")
+
+# stage 4: HeuristicJudge
+judge = HeuristicJudge(model=model)
+candidate_designs = judge.run_test_process()
+print("\n✅ Iteration 1(stage 4): HeuristicJudge finished, get the final data and recorded it to the historical data library.\n")
+print(f"\n=== Iteration 1: Finished ===\n")
+print("✅ Finished the first iteration, Now we need to use the algorithm 1 to decide the next iteration\n")
+
+# algorithm 1
+with open("../results/cgra_historical_design.json", "r") as f:
+    historical_data = json.load(f)
+
+# 提取 K_designs，保留所有关键字段
+# flat_data = [item for sublist in historical_data for item in sublist]
+K_designs = []
+for d in historical_data:
+    K_designs.append({
+        "tile_size": d["tile_size"],
+        "FUs": d["fu_counts"],
+        "config_mem": d.get("config_mem", 128),
+        "data_spm_kb": d.get("data_spm_kb", 64),
+        "unroll_factor": d.get("unroll_factor", 1),
+        "vectorize": d.get("vectorize", "none"),
+        "speedup": d.get("speedup", 1.0),
+        "power": d.get("power_consumption (mW)", 1.0)
+    })
+results = decaying_epsilon_greedy_CGRA(K_designs,
+                                            epsilon_0=0.9,
+                                            gamma=0.95,
+                                            alpha=0.3,
+                                            Q_type="design",
+                                            N_candidates=3,
+                                            max_iterations=1,
+                                            optimization_goal=optimization_goal,
+                                            kernel=kernel,
+                                            DFG_node_counts=DFG_node_counts,
+                                            max_independent_ops_per_cycle=max_independent_ops_per_cycle,
+                                            vectorizable_ops=vectorizable_ops,
+                                            model=model)
+for r in results:
+    print(f"Iter {r['iteration']}, Reward: {r['reward']:.3f}, Epsilon: {r['epsilon']:.3f}")
