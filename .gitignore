@@ -3,7 +3,7 @@
 __pycache__/
 *.log
 *.tmp
-
+algorithm/ex*
 # ============================================================
 # 忽略整个 tool 目录，但保留 test_process_candidates.py
 tool/*
