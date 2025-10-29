@@ -134,30 +134,6 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
 
     return new_results
 
-
-
-# def eval_metrics_by_arch():
-#     # 从本地读取示例 JSON 数据
-#     with open("../results/cgra_best_design.json", "r", encoding="utf-8") as f:
-#         data = json.load(f)
-#     # url = "http://localhost:8080/process_candidates"
-#     # url = "https://24efc269d7a0.ngrok-free.app/process_candidates"
-#     url = "https://ideal-grossly-bengal.ngrok-free.app/process_candidates"
-#     try:
-#         response = requests.post(url, json=data)
-#         response.raise_for_status()
-#     except requests.RequestException as e:
-#         print(f"请求失败: {e}")
-#         return 1
-
-#     print("状态码:", response.status_code)
-#     print("返回 JSON:")
-#     print(json.dumps(response.json(), ensure_ascii=False, indent=2))
-#     with open("../results/cgra_historical_design1.json", "w", encoding="utf-8") as f:
-#         json.dump(response.json(), f, ensure_ascii=False, indent=2)
-
-#     return response.json()
-
 if __name__ == "__main__":
     result_json = eval_metrics_by_arch()
     # print("\n\n------------结果------------:")
