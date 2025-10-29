@@ -2,18 +2,12 @@ import math
 import json
 import sys
 import os
+from Expertjudge_2 import ExpertJudge2Agent  # 假设这里封装了 LLM_judge / select_best
+import test_process_candidates  # 假设这里封装了 Tool_judge
 
 # 将上一级目录的 agent 加入模块搜索路径
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agent")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "tool")))
-
-from Expertjudge_2 import ExpertJudge2Agent  # 假设这里封装了 LLM_judge / select_best
-import test_process_candidates  # 假设这里封装了 Tool_judge
-from g4f.client import Client  # g4f
-
-
-# ================== 初始化客户端 ==================
-g4f_client = Client()
 
 def unified_score(design, optimization_goal="performance"):
     """

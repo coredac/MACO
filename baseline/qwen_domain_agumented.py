@@ -18,7 +18,7 @@ def call_model(model, prompt, temperature=0.7):
         str: 模型生成的响应内容
     """
     if 1:
-        api_key = "***REVOKED_DASHSCOPE_KEY***"  # 替换为你的 OpenAI API key
+        api_key = "xxxxxxxxxxxxx"  # 替换为你的 OpenAI API key
         try:
             client = OpenAI(
                 # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
@@ -38,70 +38,6 @@ def call_model(model, prompt, temperature=0.7):
         except Exception as e:
             print(f"错误信息：{e}")
             print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
-
-    # # DeepSeek 模型调用 deepseek-chat deepseek-reasoner
-    # if model.startswith("deepseek"):
-    #     api_key = "sk-ca05d18a252d4d58ac40d174511c0a66"  # 替换为你的 DeepSeek API key
-    #     if not api_key:
-    #         raise ValueError(f"API key is required for {model} model")
-
-    #     client = OpenAI(api_key=api_key, base_url="https://api.deepseek.com")
-
-    #     response = client.chat.completions.create(
-    #         model=model,
-    #         messages=[
-    #             {"role": "system", "content": "You are an expert CGRA architecture designer."},
-    #             {"role": "user", "content": prompt},
-    #         ],
-    #         stream=False 
-    #     )
-    #     return response.choices[0].message.content.strip()
-
-    # # OpenAI GPT 调用（官方 key）
-    # elif model.startswith("gpt-"):
-    #     api_key = "sk-nxUri1PbN8uBeg33ha1I50xADwD54Ny2sse1TSLVEJzAI1jG"  # 替换为你的 OpenAI API key
-    #     if not api_key:
-    #         raise ValueError("API key is required for OpenAI GPT models")
-    #     try:
-    #         client = OpenAI(api_key=api_key,
-    #         base_url="https://api.chatanywhere.tech/v1"  # 指定转发的 Host
-    #         )
-    #         response = client.chat.completions.create(
-    #             model=model,
-    #             messages=[
-    #                 {"role": "system", "content": "You are an expert CGRA architecture designer."},
-    #                 {"role": "user", "content": prompt}
-    #             ],
-    #             temperature=temperature,
-    #         )
-    #         return response.choices[0].message.content.strip()
-    #     except Exception as e:
-    #         print(f"[OpenAI GPT API 错误] {e}")
-    #         return None
-        
-    # # Qwen 调用（官方 key）
-    # elif model.startswith("qwen"):
-    #     api_key = "sk-0a2e93f069244076a8dced2a2c5256dd"  # 替换为你的 OpenAI API key
-    #     try:
-    #         client = OpenAI(
-    #             # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
-    #             api_key=api_key,
-    #             base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-    #         )
-
-    #         response = client.chat.completions.create(
-    #             model="qwen-plus",  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
-    #             messages=[
-    #                 {"role": "system", "content": "You are an expert CGRA architecture designer."},
-    #                 {"role": "user", "content": prompt}
-    #                 ]
-    #         )
-    #         # print(response.choices[0].message.content)
-    #         return response.choices[0].message.content.strip()
-    #     except Exception as e:
-    #         print(f"错误信息：{e}")
-    #         print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
-
     else:
         raise ValueError(f"Unsupported model: {model}")
 
@@ -194,30 +130,12 @@ Important:
     return candidates
 
 if __name__ == "__main__":
-    # kernel = "fir"
-    # DFG_node_counts = {"Add": 4, "Mul": 1, "Ld": 3, "St": 1, "Cmp": 1, "Phi": 1, "Br": 1}
-    # max_independent_ops_per_cycle = 4
-    # vectorizable_ops = ["Add", "Mul"]
-    # optimization_goal = "power"
-    # model = "qwen-plus"
-    # kernel = "conv"
-    # DFG_node_counts = {'Ld': 2, 'St': 0, 'Cmp': 1, 'Phi': 2, 'Br': 1, 'Sel': 0, 'Ret': 0, 'Add': 4, 'Mul': 1, 'Div': 1,'Logic':1}
-    # max_independent_ops_per_cycle = 4
-    # vectorizable_ops = ["Add", "Mul"]
-    # optimization_goal = "power"
-    # model = "qwen-plus"
     kernel = "gemm"
     DFG_node_counts = {'Ld': 3, 'St': 1, 'Cmp': 1, 'Phi': 1, 'Br': 1, 'Sel': 0, 'Ret': 0, 'Add': 4, 'Mul': 1, 'Div': 0}
     max_independent_ops_per_cycle = 4
     vectorizable_ops = ["Add", "Mul"]
     optimization_goal = "power"
     model = "qwen-plus"
-    # kernel = "fft"
-    # DFG_node_counts = {'Ld': 6, 'St': 4, 'Cmp': 1, 'Phi': 1, 'Br': 1, 'Sel': 0, 'Ret': 0, 'Add': 11, 'Mul': 4, 'Div': 0}
-    # max_independent_ops_per_cycle = 4
-    # vectorizable_ops = ["Add", "Mul"]
-    # optimization_goal = "power"
-    # model = "qwen-plus"
 
     # 在这里换模型 ["gpt-4", "gemma-3.3-27b", "llama-3.3-70b"]
     for model in ["qwen-plus"]:

@@ -18,7 +18,7 @@ def call_model(model, prompt, temperature=0.7):
         str: 模型生成的响应内容
     """
     if 1:
-        api_key = "***REVOKED_DASHSCOPE_KEY***"  # 替换为你的 OpenAI API key
+        api_key = "xxxxxxxxxxxxxxxx"  # 替换为你的 OpenAI API key
         try:
             client = OpenAI(
                 # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",

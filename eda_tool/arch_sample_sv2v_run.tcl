@@ -12,8 +12,6 @@ set target_library "asap7sc7p5t_22b_AO_RVT_TT_170906.db asap7sc7p5t_22b_INVBUF_R
 # TOP_LEVEL_NAME
 # set top_level 			"AdderRTL__c5ff3513a9265d31"
 set top_level 			$env(TOP_LEVEL_NAME)
-# PATH TO YOUR VERILOG NETLIST
-# set netlist_search_path "/data/home/zjian137/LLM4CGRA_1_fir/verilog_tool/verilog"
 set netlist_search_path $::env(NETLIST_SEARCH_PATH)
 # NETLIST NAME
 # set netlist_name "CgraRTL_sv2v.v"

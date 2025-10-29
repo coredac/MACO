@@ -4,6 +4,7 @@ from copy import deepcopy
 import json
 import sys
 import os
+import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agent")))
 
 from ArchDesigner import generate_cgra_candidates  # 从上级 agent 目录导入
@@ -77,8 +78,6 @@ def LLM_generate_exploration(K_designs, N_candidates=1, kernel="fir", DFG_node_c
         json.dump(candidates_no_reason, f, indent=2)
 
     return candidates
-
-import json
 
 def get_historical_best(design_path="../results/cgra_historical_design.json", optimization_goal=None):
     """

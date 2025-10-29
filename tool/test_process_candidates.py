@@ -58,21 +58,18 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
 
 
             # write design to a temp json file
-            os.chdir("/data/home/zjian137/LLM4CGRA/tool/")
+            os.chdir("~/MACO/tool/")
             time_id = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3] + f"{random.randint(0, 999):03d}"
             print(f"time_id: {time_id}")  # 示例：20250906184612345942
             design_filename = f"design_results_dc_{time_id}.json"
             with open(design_filename, 'w') as f:
                 json.dump(design, f)
             
-
-            # os.system("cd /data/home/zjian137/LLM4CGRA/verilog_tool/")
-            os.chdir("/data/home/zjian137/LLM4CGRA/verilog_tool/")
+            os.chdir("~/MACO/verilog_tool/")
             # os.system("bash arch2dc.bash" + )
-            subprocess.run(["bash", "arch2dc.bash", "/data/home/zjian137/LLM4CGRA/tool/"+design_filename], check=True)
-            # Use `bash arch2dc.bash "./cgra_2x2_design.json"` to write power/area/time to temp json
+            subprocess.run(["bash", "arch2dc.bash", "~/MACO/tool/"+design_filename], check=True)
             
-            os.chdir("/data/home/zjian137/LLM4CGRA/tool/")
+            os.chdir("~/MACO/tool/")
             # result_filename = "design_results_dc.json"
             # read power/area/time from temp json
             with open(design_filename, 'r') as f:

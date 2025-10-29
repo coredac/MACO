@@ -25,8 +25,7 @@ else
     # 使用返回的文件名
     echo ">>>>>>>>>> Python returned processed file: $OUTPUT_FILE"
 
-    # /data/home/zjian137/LLM4CGRA/verilog_tool/verilog/$OUTPUT_FILE
-    match=$(grep -o -m 1 '^module CGRATemplateRTL__[0-9a-f]\{16\}' "/data/home/zjian137/LLM4CGRA/verilog_tool/verilog/$OUTPUT_FILE")
+    match=$(grep -o -m 1 '^module CGRATemplateRTL__[0-9a-f]\{16\}' "~/MACO/verilog_tool/verilog/$OUTPUT_FILE")
     if [ -n "$match" ]; then
         # 提取匹配部分后面的文本（去掉"module "前缀）
         topLevelName=${match#module }
@@ -71,7 +70,7 @@ echo "total_power: $total_power"
 echo "area: $area"
 echo "execution_time: $execution_time"
 
-cd ~/LLM4CGRA/verilog_tool
+cd ~/MACO/verilog_tool
 
 # 调用Python脚本追加数据
 python append_ppa.py "$ARCH_FILE" "$total_power" "$area" "$execution_time"

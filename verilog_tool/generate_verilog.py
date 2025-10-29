@@ -833,7 +833,7 @@ def process_single_arch(arch_filename):
 
     # convert SystemVerilog to Verilog using sv2v
     print("Converting SystemVerilog to Verilog using sv2v...")
-    os.system(f"~/LLM4CGRA/verilog_tool/sv2v/bin/sv2v {filename_no_suffix}.v > ./verilog/{filename_no_suffix}_sv2v.v")
+    os.system(f"~/MACO/verilog_tool/sv2v/bin/sv2v {filename_no_suffix}.v > ./verilog/{filename_no_suffix}_sv2v.v")
 
     return f"{filename_no_suffix}_sv2v.v"
 
