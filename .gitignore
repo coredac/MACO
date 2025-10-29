@@ -2,6 +2,14 @@
 tool/*
 verilog_tool/*
 results/*
+# 忽略 baseline 目录下的特定 JSON 文件
+baseline/qwen_domain_augmented_fft.json
+baseline/qwen_domain_augmented_gemm.json
+baseline/qwen_few_shot_examples_gemm.json
+baseline/qwen_domain_augmented_conv.json
+baseline/qwen_domain_augmented_fir.json
+baseline/qwen_few_shot_examples_fir.json
+
 # 但保留文件夹本身（通过例外规则）
 !tool/.gitkeep
 !verilog_tool/.gitkeep
