@@ -111,8 +111,6 @@ Designs are represented as JSON specifications:
 
 ## Usage
 
-### Our framework uses Synopsys Design Compiler for synthesis, so you may need a license before getting started.
-
 ### Enter your API key in each file that requires it
 ```python
 api_key = "xxxxxxxxxxx"
@@ -145,6 +143,10 @@ Results are stored in the `results/` directory:
 - **cgra_candidates_fixed.json**: Candidates after mapping fixes
 - **cgra_historical_design.json**: Historical designs for feedback loops
 - **cgra_top_k.json**: Top-K candidate designs
+
+## Note
+
+Our framework uses Synopsys Design Compiler for synthesis, so you may need a license before getting started.
 
 
 ## Citation
