@@ -111,6 +111,8 @@ Designs are represented as JSON specifications:
 
 ## Usage
 
+### Our framework uses Synopsys Design Compiler for synthesis, so you may need a license before getting started.
+
 ### Enter your API key in each file that requires it
 ```python
 api_key = "xxxxxxxxxxx"
