@@ -77,33 +77,33 @@ compile_ultra
 define_name_rules asu_naming_rules -allowed {a-zA-Z0-9_} -max_length 256 -reserved_words [list "always" "and" "assign" "begin" "buf" "bufif0" "bufif1" "case" "casex" "casez" "cmos" "deassign" "default" "defparam" "disable" "edge" "else" "end" "endcase" "endfunction" "endmodule" "endprimitive" "endspecify" "endtable" "endtask" "event" "for" "force" "forever" "fork" "function" "highz0" "highz1" "if" "initial" "inout" "input" "integer" "join" "large" "macromodule" "medium" "module" "nand" "negedge" "nmos" "nor" "not" "notif0" "notif1" "or" "output" "pmos" "posedge" "primitive" "pull0" "pull1" "pulldown" "pullup" "rcmos" "reg" "release" "repeat" "rnmos" "rpmos" "rtran" "rtranif0" "rtranif1" "scalered" "small" "specify" "specparam" "strong0" "strong1" "supply0" "supply1" "table" "task" "time" "tran" "tranif0" "tranif1" "tri" "tri0" "tri1" "triand" "trior" "vectored" "wait" "wand" "weak0" "weak1" "while" "wire" "wor" "xnor" "xor" "abs" "access" "after" "alias" "all" "and" "architecture" "array" "assert" "attribute" "begin" "block" "body" "buffer" "bus" "case" "component" "configuration" "constant" "disconnect" "downto" "else" "elsif" "end" "entity" "exit" "file" "for" "function" "generate" "generic" "guarded" "if" "in" "inout" "is" "label" "library" "linkage" "loop" "map" "mod" "nand" "new" "next" "nor" "not" "null" "of" "on" "open" "or" "others" "out" "package" "port" "procedure" "process" "range" "record" "register" "rem" "report" "return" "select" "severity" "signal" "subtype" "then" "to" "transport" "type" "units" "until" "use" "variable" "wait" "when" "while" "with" "xor"] -case_insensitive -last_restricted "_" -first_restricted "_" -map {{{"*cell*","U"}, {"*-return","RET"}}} -collapse_name_space -equal_ports_nets -inout_ports_equal_nets
 change_names -rules asu_naming_rules -verbose -hierarchy
 
-# ================= 设置输出目录 =================
+# ================= Set output directory =================
 set output_dir "./output/$netlist_name"
 set netlist_dir "$output_dir/netlist"
 set timing_dir "$output_dir/timing"
 set report_dir "$output_dir/report"
 
-# 清空旧的 report 文件
+# Clear old report files
 if {[file exists $report_dir]} {
     file delete -force $report_dir
 }
 
-# 如果目录不存在，就创建
+# Create directories if they don't exist
 file mkdir $output_dir
 file mkdir $netlist_dir
 file mkdir $timing_dir
 file mkdir $report_dir
 # =================================================
 
-# 生成结构化 netlist
+# Generate structured netlist
 write_file -hierarchy -format verilog -output "$netlist_dir/${top_level}.${clk_period}.syn.v"
 write_file -hierarchy -format ddc     -output "$netlist_dir/${top_level}.ddc"
 
-# 生成时序文件
+# Generate timing files
 write_sdf -context verilog "$timing_dir/${top_level}.${clk_period}.syn.sdf"
 write_sdc "$timing_dir/${top_level}.${clk_period}.syn.sdc"
 
-# 生成报告
+# Generate reports
 set maxpaths 100
 set rpt_file "$report_dir/${top_level}.${clk_period}.syn"
 

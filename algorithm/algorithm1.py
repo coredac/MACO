@@ -7,9 +7,9 @@ import os
 import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agent")))
 
-from ArchDesigner import generate_cgra_candidates  # 从上级 agent 目录导入
-from Mapfixer import map_fixer_llm  # 从上级 agent 目录导入
-from Expertjudge import ExpertJudgeAgent  # 从上级 agent 目录导入
+from ArchDesigner import generate_cgra_candidates  # Import from parent agent directory
+from Mapfixer import map_fixer_llm  # Import from parent agent directory
+from Expertjudge import ExpertJudgeAgent  # Import from parent agent directory
 from algorithm2 import DesignSelector 
 from Heuristic_judge import HeuristicJudge
 from pathlib import Path
@@ -18,16 +18,16 @@ from pathlib import Path
 def LLM_generate_exploration(K_designs, N_candidates=1, kernel="fir", DFG_node_counts={"Add": 10, "Mul": 5, "Ld": 6, "St": 6, "Cmp": 2}, max_independent_ops_per_cycle=4,
                              vectorizable_ops=["Add", "Mul"], optimization_goal="performance", feedback=True, model="qwen-plus", output_path="../results/cgra_candidates_raw.json"):
     """
-    LLM 探索模式生成新设计，结合历史反馈和优化目标进行大胆探索
+    LLM exploration mode generates new designs, combining historical feedback and optimization goals for bold exploration
     """
-    # 尝试加载历史设计
+    # Try loading historical designs
     try:
         with open("../results/cgra_historical_design.json", "r") as f:
             historical_designs = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         historical_designs = []
 
-    # 将 feedback 与历史设计合并，用于提示 LLM
+    # Merge feedback with historical designs to prompt LLM
     if feedback:
         historical_designs.append(feedback)
         prompt_feedback = (
@@ -36,35 +36,35 @@ def LLM_generate_exploration(K_designs, N_candidates=1, kernel="fir", DFG_node_c
             f"{historical_designs}\n"
         )
 
-    # 探索提示
+    # Exploration hint
     exploration_hint = (
         "Exploration hint: Generate bold design variations that may differ from previous designs."
     )
-    # 调用 generate_cgra_candidates 生成新设计
+    # Call generate_cgra_candidates to generate new designs
     candidates = generate_cgra_candidates(
         kernel=kernel,
         DFG_node_counts=DFG_node_counts,
         max_independent_ops_per_cycle=max_independent_ops_per_cycle,
         vectorizable_ops=vectorizable_ops,
         optimization_goal=optimization_goal,
-        N=N_candidates,  # 只生成一个探索设计
+        N=N_candidates,  # Only generate one exploration design
         model=model,
         extra_prompt=f"{prompt_feedback}",
         extra_prompt2=f"{exploration_hint}"
     )
 
-    # 如果 LLM 生成失败，回退到随机设计
+    # If LLM generation fails, fall back to random design
     if not candidates:
         candidates = [deepcopy(random.choice(K_designs))]
 
-    # 尝试读取已有文件
+    # Try reading existing file
     # try:
     #     with open(output_path, "r") as f:
     #         raw_candidates = json.load(f)
     # except (FileNotFoundError, json.JSONDecodeError):
     #     raw_candidates = []
 
-    # 去掉 reasoning 字段，保持结构一致
+    # Remove reasoning field, maintain consistent structure
     candidates_no_reason = []
     for c in candidates:
         c_copy = {k: v for k, v in c.items() if k != "reasoning"}
@@ -72,7 +72,7 @@ def LLM_generate_exploration(K_designs, N_candidates=1, kernel="fir", DFG_node_c
 
     # raw_candidates.extend(candidates_no_reason)
 
-    # 写入文件
+    # Write to file
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(candidates_no_reason, f, indent=2)
@@ -81,8 +81,8 @@ def LLM_generate_exploration(K_designs, N_candidates=1, kernel="fir", DFG_node_c
 
 def get_historical_best(design_path="../results/cgra_historical_design.json", optimization_goal=None):
     """
-    从历史设计中选择最优设计
-    metric: "speedup" 或 "power/speedup" 等
+    Select the best design from historical designs
+    metric: "speedup" or "power/speedup", etc.
     """
     try:
         with open(design_path, "r") as f:
@@ -93,11 +93,11 @@ def get_historical_best(design_path="../results/cgra_historical_design.json", op
     if not designs:
         return None
 
-    # 根据指定指标选择最优设计
+    # Select the best design based on specified metric
     if optimization_goal == "speedup":
         historical_best = max(designs, key=lambda x: x.get("speedup", 0))
     elif optimization_goal == "power":
-        # 较小的 power 比值优先
+        # Smaller power ratio has priority
         historical_best = min(designs, key=lambda x: x.get("power", 1))
     else:
         historical_best = designs[0]
@@ -108,9 +108,9 @@ def get_historical_best(design_path="../results/cgra_historical_design.json", op
 def LLM_generate_exploitation(K_designs, N_candidates=1, kernel="fir", DFG_node_counts={"Add": 10, "Mul": 5, "Ld": 6, "St": 6, "Cmp": 2}, max_independent_ops_per_cycle=4,
                              vectorizable_ops=["Add", "Mul"], optimization_goal="performance", feedback=True, model="qwen-plus", output_path="../results/cgra_candidates_raw.json"):
     """
-    LLM 利用模式生成新设计，只参考历史最佳设计进行优化
+    LLM exploitation mode generates new designs, only referencing historical best design for optimization
     """
-    # 历史最佳设计提示
+    # Historical best design prompt
     prompt_feedback = ""
     historical_best = get_historical_best("../results/cgra_historical_design.json", optimization_goal)
     if historical_best:
@@ -124,30 +124,30 @@ def LLM_generate_exploitation(K_designs, N_candidates=1, kernel="fir", DFG_node_
         f"with respect to the optimization goal '{optimization_goal}'. Avoid degrading previous improvements."
     )
 
-    # 调用 generate_cgra_candidates 生成新设计
+    # Call generate_cgra_candidates to generate new designs
     candidates = generate_cgra_candidates(
         kernel=kernel,
         DFG_node_counts=DFG_node_counts,
         max_independent_ops_per_cycle=max_independent_ops_per_cycle,
         vectorizable_ops=vectorizable_ops,
         optimization_goal=optimization_goal,
-        N=N_candidates,  # 只生成一个 exploitation 设计
+        N=N_candidates,  # Only generate one exploitation design
         model=model,
         extra_prompt=f"{prompt_feedback}",
         extra_prompt2=f"{optimization_hint}"
     )
-    
 
-    # 如果 LLM 生成失败，回退到随机选择
+
+    # If LLM generation fails, fall back to random selection
     if not candidates:
         candidates = [deepcopy(random.choice(K_designs))]
 
 
-    # 去掉 reasoning 字段
+    # Remove reasoning field
     candidates_no_reason = [{k: v for k, v in c.items() if k != "reasoning"} for c in candidates]
 
 
-    # 写入文件
+    # Write to file
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         json.dump(candidates_no_reason, f, indent=2)
@@ -156,13 +156,13 @@ def LLM_generate_exploitation(K_designs, N_candidates=1, kernel="fir", DFG_node_
 
 
 def select_best_candidate(candidates, strategy="heuristic"):
-    """从候选设计中选出最终设计"""
-    # 简单示例：按统一评分选出最高的
+    """Select final design from candidate designs"""
+    # Simple example: select highest by unified scoring
     return max(candidates, key=lambda d: unified_score(d))
 
 def unified_score(design, optimization_goal="performance"):
-    """统一评分函数"""
-    design = {k: v for k, v in design.items() if k != "id"}  # 去掉 id
+    """Unified scoring function"""
+    design = {k: v for k, v in design.items() if k != "id"}  # Remove id
     if optimization_goal == "performance":
         vector_factor = {"none": 0.5, "interleaved": 0.8, "all": 1.0}.get(design.get("vectorize", "none"), 0.7)
         unroll_factor = design.get("unroll_factor", 1) / 6.0
@@ -177,19 +177,19 @@ def unified_score(design, optimization_goal="performance"):
     return score
 
 def update_design_pool(prev_pool, D_final):
-    """更新设计池，可根据策略替换"""
+    """Update design pool, can replace according to strategy"""
     new_pool = deepcopy(prev_pool)
     new_pool.append(D_final)
     return new_pool
 
 def get_reward_from_historical(D_final, historical_data, optimization_goal="performance"):
     """
-    从历史数据中找到 D_final 对应的 reward
+    Find corresponding reward for D_final from historical data
     optimization_goal: "performance" -> speedup
-                       "energy" -> power（可改成功耗相关指标）
+                       "energy" -> power (can be changed to power-related metric)
     """
     for d in historical_data:
-        # 完全匹配所有关键字段
+        # Fully match all key fields
         fields = ["tile_size", "FUs", "config_mem", "data_spm_kb", "unroll_factor", "vectorize"]
         match = True
         for f in fields:
@@ -207,22 +207,22 @@ def get_reward_from_historical(D_final, historical_data, optimization_goal="perf
                     break
         if match:
             if optimization_goal == "performance":
-                return d.get("speedup", 1.0)  # 默认 1.0
+                return d.get("speedup", 1.0)  # Default 1.0
             elif optimization_goal == "power":
-                power = d.get("power", 500.0)  # 默认 500 mW
-                # 合理缩放到大约 1~6 区间，例如 power 越小 reward 越大
-                # 这里假设功耗范围 ~100~1000 mW
-                reward = (1000.0 / max(power, 1.0))  # ~6 对应 100 mW, ~0.6 对应 1000 mW
+                power = d.get("power", 500.0)  # Default 500 mW
+                # Reasonable scaling to approximately 1~6 range, e.g., smaller power means larger reward
+                # Assume power range ~100~1000 mW
+                reward = (1000.0 / max(power, 1.0))  # ~6 corresponds to 100 mW, ~0.6 corresponds to 1000 mW
                 return reward
-    # 如果历史里没找到，返回默认值
+    # If not found in historical data, return default value
     return 1.0
 
 
 def extract_strategy(design):
-    """从设计中提取策略，用于 Q_type='strategy'"""
+    """Extract strategy from design, used for Q_type='strategy'"""
     return design.get("strategy", "default")
 
-# ==================== 算法实现 ====================
+# ==================== Algorithm implementation ====================
 def decaying_epsilon_greedy_CGRA(K_designs_init,
                                  epsilon_0=0.9,
                                  gamma=0.95,
@@ -239,7 +239,7 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
                                  ):
     t = 0
     Q = {}  # Q-values
-    C = []  # 记录最终选择
+    C = []  # Record final selections
 
     K_designs = deepcopy(K_designs_init)
     selector = DesignSelector()
@@ -282,7 +282,7 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
             optimization_goal=optimization_goal,
             model=model
         )
-        # 输出修复后的 JSON
+        # Output fixed JSON
         with open("../results/cgra_candidates_fixed.json", "w") as f:
             json.dump(candidates, f, indent=2)
 
@@ -292,7 +292,7 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
         with open("../results/cgra_candidates_fixed.json", "r") as f:
             candidate_designs = json.load(f)
 
-        # 转成紧凑格式的 JSON 字符串
+        # Convert to compact format JSON string
         candidate_designs_json = json.dumps(candidate_designs, separators=(',', ':'))
 
         for model in [model]:
@@ -314,35 +314,35 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
         for file_path in json_files:
             path = Path(file_path)
             if not path.exists():
-                print(f"文件不存在: {file_path}")
+                print(f"File does not exist: {file_path}")
                 continue
 
-            # 读取原 JSON
+            # Read original JSON
             with open(path, "r") as f:
                 designs = json.load(f)
 
-            # 如果是单个 dict，包装成列表
+            # If single dict, wrap into list
             if isinstance(designs, dict):
                 designs = [designs]
                 single_object = True
             else:
                 single_object = False
 
-            # 给每个设计加上 kernel 字段
+            # Add kernel field to each design
             for design in designs:
                 if isinstance(design, dict):
                     design["kernel"] = kernel_path
                 else:
-                    print(f"跳过非字典条目: {design}")
+                    print(f"Skip non-dictionary entry: {design}")
 
-            # 如果原本是单个对象，保存回去时解包成 dict
+            # If originally a single object, unpack to dict when saving back
             save_data = designs[0] if single_object else designs
 
-            # 保存回原文件
+            # Save back to original file
             with open(path, "w") as f:
                 json.dump(save_data, f, indent=4)
 
-            print(f"已更新 {file_path}，每个设计添加 kernel 字段")
+            print(f"Updated {file_path}, added kernel field to each design")
 
 
         #stage 3-2
@@ -350,19 +350,19 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
             K_designs = json.load(f)
         result = selector.run_once(K_designs, optimization_goal=optimization_goal)
         print(result)
-        # 保存历史
+        # Save history
         # with open("../results/final_choices.json", "w") as f:
         #     json.dump(result["final_choice"], f, indent=2)
         path = "../results/final_choices.json"
 
-        # 如果文件已存在，先读出来，否则用空list
+        # If file already exists, read it first, otherwise use empty list
         if os.path.exists(path):
             with open(path, "r") as f:
                 data = json.load(f)
         else:
             data = {}
 
-        # 用 iteration 或 tool_calls 或时间戳做 key
+        # Use iteration or tool_calls or timestamp as key
         key = f"choice_{len(data) + 1}"
         data[key] = result["final_choice"]
 
@@ -393,7 +393,7 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
         #     S_used = extract_strategy(D_final)
         #     Q[S_used] = (1 - alpha) * Q.get(S_used, 0) + alpha * r_final
         # else:
-        D_key = str(D_final)  # 可序列化作为字典 key
+        D_key = str(D_final)  # Serializable as dictionary key
         Q[D_key] = (1 - alpha) * Q.get(D_key, 0) + alpha * r_final
 
         # Step 5: Record final choice and reward
@@ -409,13 +409,13 @@ def decaying_epsilon_greedy_CGRA(K_designs_init,
 
     return C
 
-# ==================== 示例运行 ====================
+# ==================== Example run ====================
 if __name__ == "__main__":
-    # 构造 K_designs 示例
+    # Construct K_designs example
     with open("../results/cgra_historical_design.json", "r") as f:
         historical_data = json.load(f)
 
-    # 提取 K_designs，保留所有关键字段
+    # Extract K_designs, keep all key fields
     K_designs = []
     for d in historical_data:
         K_designs.append({

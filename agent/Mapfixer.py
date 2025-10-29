@@ -5,28 +5,28 @@ import re
 
 def call_model(model, prompt, temperature=0.7):
     """
-    统一模型调用函数，支持多种模型
-    
+    Unified model calling function, supports multiple models
+
     Args:
-        model: 模型名称，支持 "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder" 等
-        prompt: 用户输入的提示词
-        temperature: 生成温度，默认0.7
-        api_key: API key (DeepSeek 或 OpenAI 的)，调用官方 API 时必需
-    
+        model: Model name, supports "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder", etc.
+        prompt: User input prompt
+        temperature: Generation temperature, default 0.7
+        api_key: API key (DeepSeek or OpenAI), required when calling official API
+
     Returns:
-        str: 模型生成的响应内容
+        str: Model generated response content
     """
     if 1:
-        api_key = "xxxxxxxxxxxxxxxx"  # 替换为你的API key
+        api_key = "xxxxxxxxxxxxxxxxxxxx"  # Replace with your API key
         try:
             client = OpenAI(
-                # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
+                # If environment variable is not configured, replace the following line with Alibaba Cloud API Key: api_key="sk-xxx",
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
 
             response = client.chat.completions.create(
-                model=model,  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
+                model=model,  # Model list: https://help.aliyun.com/zh/model-studio/getting-started/models
                 messages=[
                     {"role": "system", "content": "You are an expert CGRA architecture designer."},
                     {"role": "user", "content": prompt}
@@ -35,18 +35,18 @@ def call_model(model, prompt, temperature=0.7):
             # print(response.choices[0].message.content)
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"错误信息：{e}")
-            print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
+            print(f"Error message: {e}")
+            print("Please refer to the documentation: https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
     else:
         raise ValueError(f"Unsupported model: {model}")
 
 
 
-# ================= 校验函数 =================
+# ================= Validation function =================
 def validate_tile_fu(design):
     """
-    校验单个 CGRA design 的 tile_size 与 FU 数量是否匹配
-    返回 report 字典
+    Validate whether tile_size of single CGRA design matches FU count
+    Return report dictionary
     """
     report = {"valid": True, "issues": []}
 
@@ -67,7 +67,7 @@ def validate_tile_fu(design):
     except Exception:
         report["valid"] = False
         report["issues"].append(f"tile_size '{design.get('tile_size')}' is invalid")
-        rows = cols = None  # 避免后续报错
+        rows = cols = None  # Avoid subsequent errors
 
     fus = design.get("FUs", {})
     expected_tiles = rows * cols if rows and cols else None
@@ -93,7 +93,7 @@ def validate_tile_fu(design):
 
 def validate_design_list(designs):
     """
-    批量校验 CGRA design list
+    Batch validation of CGRA design list
     """
     reports = []
     for i, d in enumerate(designs):
@@ -108,7 +108,7 @@ def validate_design_list(designs):
 def map_fixer_llm(candidates, kernel, DFG_node_counts, max_independent_ops_per_cycle,
                    vectorizable_ops, optimization_goal, model="gpt-4"):
     """
-    使用 LLM 修复 CGRA design
+    Use LLM to fix CGRA design
     """
     reports = validate_design_list(candidates)
 
@@ -143,7 +143,7 @@ Return in a JSON object with two keys:
 """
     content = call_model(model, prompt)
     print(content)
-    # 提取 JSON 部分
+    # Extract JSON part
     # json_match = re.search(r"(\[.*\])", content, re.DOTALL)
     json_match = re.search(r"(\{[\s\S]*\})", content)
     if json_match:
@@ -163,7 +163,7 @@ Return in a JSON object with two keys:
 
 
 if __name__ == "__main__":
-    # 从文件读取 LLM 生成的 JSON
+    # Read LLM generated JSON from file
     with open("../results/cgra_candidates_raw.json", "r") as f:
         candidates = json.load(f)
 
@@ -187,12 +187,12 @@ if __name__ == "__main__":
         with open("../results/cgra_candidates_fixed.json", "r") as f:
             candidates = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        candidates = []  # 如果文件不存在或坏了，就新建一个 list
+        candidates = []  # If file does not exist or is corrupted, create a new list
 
-    # 2. 追加数据
+    # 2. Append data
     candidates.extend(fixed_candidates)
 
-    # 输出修复后的 JSON
+    # Output fixed JSON
     with open("../results/cgra_candidates_fixed.json", "w") as f:
         json.dump(candidates, f, indent=2)
 

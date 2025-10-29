@@ -5,28 +5,28 @@ import re
 
 def call_model(model, prompt, temperature=0.7):
     """
-    统一模型调用函数，支持多种模型
-    
+    Unified model calling function, supports multiple models
+
     Args:
-        model: 模型名称，支持 "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder" 等
-        prompt: 用户输入的提示词
-        temperature: 生成温度，默认0.7
-        api_key: API key (DeepSeek 或 OpenAI 的)，调用官方 API 时必需
-    
+        model: Model name, supports "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder", etc.
+        prompt: User input prompt
+        temperature: Generation temperature, default 0.7
+        api_key: API key (DeepSeek or OpenAI), required when calling official API
+
     Returns:
-        str: 模型生成的响应内容
+        str: Model generated response content
     """
     if 1:
-        api_key = "xxxxxxxxxxxxxxxx"  # 替换为你的API key
+        api_key = "xxxxxxxxxxxxxxxxxxxxxxx"  # Replace with your API key
         try:
             client = OpenAI(
-                # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
+                # If environment variable is not configured, replace the following line with Alibaba Cloud API Key: api_key="sk-xxx",
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
 
             response = client.chat.completions.create(
-                model=model,  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
+                model=model,  # Model list: https://help.aliyun.com/zh/model-studio/getting-started/models
                 messages=[
                     {"role": "system", "content": "You are an expert CGRA architecture designer."},
                     {"role": "user", "content": prompt}
@@ -35,8 +35,8 @@ def call_model(model, prompt, temperature=0.7):
             # print(response.choices[0].message.content)
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"错误信息：{e}")
-            print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
+            print(f"Error message: {e}")
+            print("Please refer to the documentation: https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
 
     else:
         raise ValueError(f"Unsupported model: {model}")
@@ -49,9 +49,9 @@ class ExpertJudgeAgent:
 
     def judge_designs(self, candidate_designs, optimization_goal="performance", top_k=3):
         """
-        使用 LLM 对候选 CGRA design 进行评判并选出 Top-K。
-        输出固定为一个 JSON 对象，包括 "top_k_design" 和 "reason"。
-        返回值只提取 "top_k_design"。
+        Use LLM to evaluate candidate CGRA designs and select Top-K.
+        Output is fixed as a JSON object, including "top_k_design" and "reason".
+        Return value only extracts "top_k_design".
         """
         prompt = f"""
     You are an expert in CGRA architecture design. 
@@ -79,13 +79,13 @@ class ExpertJudgeAgent:
         # print("=======content=======")
         print(content)
 
-        # 匹配最外层的 JSON 对象 {}
+        # Match outermost JSON object {}
         json_match = re.search(r"(\{[\s\S]*\})", content)
         if json_match:
             json_str = json_match.group(1)
             try:
                 parsed = json.loads(json_str)
-                # 只返回 top_k_design 部分
+                # Only return top_k_design part
                 topk_arch = parsed.get("top_k_design", [])
             except json.JSONDecodeError:
                 print("⚠️ Extracted JSON is invalid:")
@@ -99,12 +99,12 @@ class ExpertJudgeAgent:
 
 
 
-# ========== 使用示例 ==========
+# ========== Usage example ==========
 if __name__ == "__main__":
     with open("../results/cgra_candidates_fixed.json", "r") as f:
         candidate_designs = json.load(f)
 
-    # 转成紧凑格式的 JSON 字符串
+    # Convert to compact format JSON string
     candidate_designs_json = json.dumps(candidate_designs, separators=(',', ':'))
 
     for model in ["gpt-4"]:

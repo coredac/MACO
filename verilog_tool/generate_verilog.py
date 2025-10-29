@@ -776,7 +776,7 @@ def process_single_arch(arch_filename):
 
                 if j == 0:
                     # connect to memory
-                    print(f"--------  connect to memory  --------row:{i} <-> col:{j}")
+                    print(f"-------- connect to memory --------row:{i} <-> col:{j}")
                     tile0 = paramCGRA.getTileOfDim(j, i)
                     link0 = ParamLink(tile0, paramCGRA.dataSPM, PORT_WEST, i)
                     link1 = ParamLink(paramCGRA.dataSPM, tile0, i, PORT_WEST)
@@ -845,7 +845,7 @@ if __name__ == "__main__":
     result_file = process_single_arch(input_file)
 
     if result_file:
-        # 将结果文件名输出到标准输出（供Bash捕获）
+        # Output result filename to stdout (for Bash to capture)
         print(result_file)
     else:
         sys.exit(1)
@@ -854,7 +854,7 @@ if __name__ == "__main__":
     # for filename in os.listdir(directory_path):
     #     if filename.endswith('.json'):
     #         file_path = os.path.join(directory_path, filename)
-    #         print(f"处理文件: {file_path}")
+    #         print(f"Process file: {file_path}")
     #         process_single_arch(file_path)
     #         print(f"Finished processing file: {file_path}\n-----------------------\n")
     

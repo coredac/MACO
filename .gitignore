@@ -1,29 +1,29 @@
 # ============================================================
-# 忽略大部分中间文件和缓存
+# Ignore most intermediate files and caches
 __pycache__/
 *.log
 *.tmp
 algorithm/ex*
 # ============================================================
-# 忽略整个 tool 目录，但保留 test_process_candidates.py
+# Ignore the entire tool directory, but keep test_process_candidates.py
 tool/*
 !tool/.gitkeep
 !tool/test_process_candidates.py
 
 # ============================================================
-# 忽略整个 verilog_tool 目录，但保留 arch2dc.bash 和 generate_verilog.py
+# Ignore the entire verilog_tool directory, but keep arch2dc.bash and generate_verilog.py
 verilog_tool/*
 !verilog_tool/.gitkeep
 !verilog_tool/arch2dc.bash
 !verilog_tool/generate_verilog.py
 
 # ============================================================
-# 忽略整个 results 目录，只保留空目录
+# Ignore the entire results directory, only keep the empty directory
 results/*
 !results/.gitkeep
 
 # ============================================================
-# 忽略 baseline 中指定 JSON 文件
+# Ignore specified JSON files in baseline directory
 baseline/qwen_domain_augmented_fft.json
 baseline/qwen_domain_augmented_gemm.json
 baseline/qwen_few_shot_examples_gemm.json

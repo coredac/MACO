@@ -6,28 +6,28 @@ import os
 
 def call_model(model, prompt, temperature=0.7):
     """
-    统一模型调用函数，支持多种模型
-    
+    Unified model calling function, supports multiple models
+
     Args:
-        model: 模型名称，支持 "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder" 等
-        prompt: 用户输入的提示词
-        temperature: 生成温度，默认0.7
-        api_key: API key (DeepSeek 或 OpenAI 的)，调用官方 API 时必需
-    
+        model: Model name, supports "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder", etc.
+        prompt: User input prompt
+        temperature: Generation temperature, default 0.7
+        api_key: API key (DeepSeek or OpenAI), required when calling official API
+
     Returns:
-        str: 模型生成的响应内容
+        str: Model generated response content
     """
     if 1:
-        api_key = "xxxxxxxxxxxxx"  # 替换为你的 OpenAI API key
+        api_key = "xxxxxxxxxxxxx"  # Replace with your OpenAI API key
         try:
             client = OpenAI(
-                # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
+                # If environment variable is not configured, replace the following line with Alibaba Cloud API Key: api_key="sk-xxx",
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
 
             response = client.chat.completions.create(
-                model=model,  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
+                model=model,  # Model list: https://help.aliyun.com/zh/model-studio/getting-started/models
                 messages=[
                     {"role": "system", "content": "You are an expert CGRA architecture designer."},
                     {"role": "user", "content": prompt}
@@ -36,8 +36,8 @@ def call_model(model, prompt, temperature=0.7):
             # print(response.choices[0].message.content)
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"错误信息：{e}")
-            print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
+            print(f"Error message: {e}")
+            print("Please refer to the documentation: https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
     else:
         raise ValueError(f"Unsupported model: {model}")
 
@@ -54,7 +54,7 @@ def generate_cgra_candidates(
     extra_prompt2=None
 ):
     """
-    使用 LLM 生成 N 个候选 CGRA design
+    Use LLM to generate N candidate CGRA designs
     """
     prompt = f"""
 You are an expert CGRA architect.
@@ -114,7 +114,7 @@ Important:
 
     content = call_model(model, prompt)
     print(content)
-    # 提取 JSON 部分
+    # Extract JSON part
     json_match = re.search(r"(\[.*\])", content, re.DOTALL)
     if json_match:
         json_str = json_match.group(1)
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     optimization_goal = "power"
     model = "qwen-plus"
 
-    # 在这里换模型 ["gpt-4", "gemma-3.3-27b", "llama-3.3-70b"]
+    # Change model here ["gpt-4", "gemma-3.3-27b", "llama-3.3-70b"]
     for model in ["qwen-plus"]:
         print(f"=== Running {model} ===")
         candidates = generate_cgra_candidates(
@@ -149,7 +149,7 @@ if __name__ == "__main__":
             N=1,
             model=model
         )
-        # 去掉 reasoning 字段
+        # Remove reasoning field
         candidates_no_reason = []
         for c in candidates:
             c_copy = {k: v for k, v in c.items() if k != "reasoning"}

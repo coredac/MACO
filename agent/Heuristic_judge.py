@@ -8,28 +8,28 @@ import re
 
 def call_model(model, prompt, temperature=0.7):
     """
-    统一模型调用函数，支持多种模型
-    
+    Unified model calling function, supports multiple models
+
     Args:
-        model: 模型名称，支持 "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder" 等
-        prompt: 用户输入的提示词
-        temperature: 生成温度，默认0.7
-        api_key: API key (DeepSeek 或 OpenAI 的)，调用官方 API 时必需
-    
+        model: Model name, supports "gpt-4", "gpt-4o", "deepseek-chat", "deepseek-coder", etc.
+        prompt: User input prompt
+        temperature: Generation temperature, default 0.7
+        api_key: API key (DeepSeek or OpenAI), required when calling official API
+
     Returns:
-        str: 模型生成的响应内容
+        str: Model generated response content
     """
     if 1:
-        api_key = "xxxxxxxxxxxxx"  # 替换为你的API key
+        api_key = "xxxxxxxxxxxxxxxxxxxxxxxx"  # Replace with your API key
         try:
             client = OpenAI(
-                # 若没有配置环境变量，请用阿里云百炼API Key将下行替换为：api_key="sk-xxx",
+                # If environment variable is not configured, replace the following line with Alibaba Cloud API Key: api_key="sk-xxx",
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
 
             response = client.chat.completions.create(
-                model=model,  # 模型列表：https://help.aliyun.com/zh/model-studio/getting-started/models
+                model=model,  # Model list: https://help.aliyun.com/zh/model-studio/getting-started/models
                 messages=[
                     {"role": "system", "content": "You are an expert CGRA architecture designer."},
                     {"role": "user", "content": prompt}
@@ -38,8 +38,8 @@ def call_model(model, prompt, temperature=0.7):
             # print(response.choices[0].message.content)
             return response.choices[0].message.content.strip()
         except Exception as e:
-            print(f"错误信息：{e}")
-            print("请参考文档：https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
+            print(f"Error message: {e}")
+            print("Please refer to the documentation: https://help.aliyun.com/zh/model-studio/developer-reference/error-code")
     else:
         raise ValueError(f"Unsupported model: {model}")
 
@@ -50,8 +50,8 @@ class HeuristicJudge:
 
     def run_test_process(self):
         """
-        调用上级目录 tool/test_process_candidates.py 脚本
-        并获取输出的 candidate designs
+        Call parent directory tool/test_process_candidates.py script
+        and get output candidate designs
         """
         script_path = os.path.join("..", "tool", "test_process_candidates.py")
         result = subprocess.run(
@@ -64,7 +64,7 @@ class HeuristicJudge:
 
     def load_historical_data(self, json_path="cgra_historical_design.json"):
         """
-        打开历史 design 数据
+        Open historical design data
         """
         if not os.path.exists(json_path):
             return []
@@ -73,7 +73,7 @@ class HeuristicJudge:
 
     def judge(self, candidate_designs, historical_data, optimization_goal="performance", top_k=3):
         """
-        用 LLM 评判候选 designs，参考历史数据给出提示
+        Use LLM to evaluate candidate designs, provide hints with reference to historical data
         """
         prompt = f"""
 You are an expert in CGRA architecture design. 
@@ -109,13 +109,13 @@ Important:
 if __name__ == "__main__":
     judge = HeuristicJudge(model="gpt-4")
 
-    # Step 1: 获取候选设计
+    # Step 1: Get candidate designs
     candidate_designs = judge.run_test_process()
 
-    # # Step 2: 读取历史数据
+    # # Step 2: Read historical data
     # historical_data = judge.load_historical_data()
 
-    # # Step 3: 调用模型进行评判
+    # # Step 3: Call model for evaluation
     # top_designs, reason = judge.judge(candidate_designs, historical_data, optimization_goal="performance", top_k=3)
 
     # print("Top Designs:", top_designs)

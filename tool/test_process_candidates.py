@@ -15,17 +15,17 @@ import random
 def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
                          history_path="../results/cgra_historical_design.json",
                          ppa_source=1): # 1 for dc(default), 2 estimate
-    # 从本地读取候选 design 列表
+    # Read candidate design list locally
     with open(path, "r", encoding="utf-8") as f:
         designs = json.load(f)
 
-    # 如果是单个 dict，自动包成 list
+    # If single dict, automatically wrap into list
     if isinstance(designs, dict):
         designs = [designs]
 
     url = "https://ideal-grossly-bengal.ngrok-free.app/process_candidates"
 
-    # 如果历史文件存在，先读入历史数据
+    # If historical file exists, read historical data first
     if os.path.exists(history_path):
         try:
             with open(history_path, "r", encoding="utf-8") as f:
@@ -33,7 +33,7 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
             if isinstance(historical_data, dict):
                 historical_data = [historical_data]
         except json.JSONDecodeError:
-            # 文件空或者坏掉时，重置为空 list
+            # When file is empty or corrupted, reset to empty list
             historical_data = []
     else:
         historical_data = []
@@ -42,10 +42,10 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
 
     for design in designs:
         try:
-            # 必须以 list 形式传给后端
+            # Must be passed in list form to backend
             response = requests.post(url, json=[design])
             response.raise_for_status()
-            result_list = response.json()  # 这里一般返回 list
+            result_list = response.json()  # Usually returns list here
             if not isinstance(result_list, list):
                 result_list = [result_list]
 
@@ -60,7 +60,7 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
             # write design to a temp json file
             os.chdir("~/MACO/tool/")
             time_id = datetime.now().strftime("%Y%m%d%H%M%S%f")[:-3] + f"{random.randint(0, 999):03d}"
-            print(f"time_id: {time_id}")  # 示例：20250906184612345942
+            print(f"time_id: {time_id}")  # Example: 20250906184612345942
             design_filename = f"design_results_dc_{time_id}.json"
             with open(design_filename, 'w') as f:
                 json.dump(design, f)
@@ -84,7 +84,7 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
                 # design["execution_time"] = execution_time
 
             for result in result_list:
-                # 把设计信息和结果合并
+                # Merge design information with result
                 if ppa_source==1:
                     result_with_design = {
                         "tile_size": design.get("tile_size"),
@@ -114,18 +114,18 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
                         **result
                     }
 
-                # 避免重复
+                # Avoid duplicates
                 if result_with_design not in historical_data:
                     historical_data.append(result_with_design)
                     new_results.append(result_with_design)
                 else:
-                    print(f"跳过重复 design: {design.get('tile_size')}")
+                    print(f"Skip duplicate design: {design.get('tile_size')}")
                     new_results.append(result_with_design)
 
         except requests.RequestException as e:
-            print(f"请求失败: {e}")
+            print(f"Request failed: {e}")
 
-    # 写回历史文件
+    # Write back to historical file
     with open(history_path, "w", encoding="utf-8") as f:
         json.dump(historical_data, f, ensure_ascii=False, indent=2)
 
@@ -133,7 +133,7 @@ def eval_metrics_by_arch(path="../results/cgra_top_k_test.json",
 
 if __name__ == "__main__":
     result_json = eval_metrics_by_arch()
-    # print("\n\n------------结果------------:")
+    # print("\n\n------------Result------------:")
     # for item in result_json:
     #     print(f"Id: {item['id']}, speedup: {item['speedup']}, power_consumption (mW): {item['power_consumption (mW)']}, area_consumption (um^2): {item['area_consumption (um^2)']}")
     

@@ -6,10 +6,10 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agent")))
 
-from ArchDesigner import generate_cgra_candidates  # 从上级 agent 目录导入
-from Mapfixer import map_fixer_llm  # 从上级 agent 目录导入
-from Expertjudge import ExpertJudgeAgent  # 从上级 agent 目录导入
-from Expertjudge_2 import ExpertJudge2Agent  # 从上级 agent 目录导入
+from ArchDesigner import generate_cgra_candidates  # Import from parent agent directory
+from Mapfixer import map_fixer_llm  # Import from parent agent directory
+from Expertjudge import ExpertJudgeAgent  # Import from parent agent directory
+from Expertjudge_2 import ExpertJudge2Agent  # Import from parent agent directory
 from algorithm2 import DesignSelector 
 from Heuristic_judge import HeuristicJudge
 from algorithm1 import decaying_epsilon_greedy_CGRA
@@ -40,7 +40,7 @@ for model in [model]:
         N=3,
         model=model
     )
-    # 去掉 reasoning 字段
+    # Remove reasoning field
     candidates_no_reason = []
     for c in candidates:
         c_copy = {k: v for k, v in c.items() if k != "reasoning"}
@@ -55,7 +55,7 @@ print("\n✅ Iteration 1(stage 1): ArchDesigner finished, raw JSON saved to cgra
 
 with open("../results/cgra_candidates_raw.json", "r") as f:
     candidates = json.load(f)
-    # 进行 Mapfixer 的处理
+    # Process with Mapfixer
     fixed_candidates = map_fixer_llm(
         candidates,
         kernel,
@@ -66,7 +66,7 @@ with open("../results/cgra_candidates_raw.json", "r") as f:
         model=model
     )
 
-    # 输出修复后的 JSON
+    # Output fixed JSON
     with open("../results/cgra_candidates_fixed.json", "w") as f:
         json.dump(fixed_candidates, f, indent=2)
 
@@ -76,7 +76,7 @@ with open("../results/cgra_candidates_raw.json", "r") as f:
 with open("../results/cgra_candidates_fixed.json", "r") as f:
     fixed_candidates = json.load(f)
     fixed_candidates = json.dumps(fixed_candidates, separators=(',', ':'))
-# 进行 ExpertJudge 的处理
+# Process with ExpertJudge
 judge_agent = ExpertJudgeAgent(model=model)
 top_designs = judge_agent.judge_designs(fixed_candidates, optimization_goal=optimization_goal, top_k=2)
 with open("../results/cgra_top_k.json", "w") as f:
@@ -88,7 +88,7 @@ print("\n✅ Iteration 1(stage 3-1): ExpertJudge finished, top designs saved to 
 # No algorithm
 # with open("../results/cgra_top_k.json", "r") as f:
 #         topk_designs = json.load(f)
-# # 转成紧凑格式的 JSON 字符串
+# # Convert to compact format JSON string
 # topk_designs = json.dumps(topk_designs, separators=(',', ':'))
 # judge2_agent = ExpertJudge2Agent(model=model)
 # best_design = judge2_agent.select_best(topk_designs, optimization_goal=optimization_goal)
@@ -109,35 +109,35 @@ kernel_path = "/WORK_REPO/CGRA-Flow/CGRA-Mapper/test/kernels/conv/conv.c"
 for file_path in json_files:
     path = Path(file_path)
     if not path.exists():
-        print(f"文件不存在: {file_path}")
+        print(f"File does not exist: {file_path}")
         continue
 
-    # 读取原 JSON
+    # Read original JSON
     with open(path, "r") as f:
         designs = json.load(f)
 
-    # 如果是单个 dict，包装成列表
+    # If single dict, wrap into list
     if isinstance(designs, dict):
         designs = [designs]
         single_object = True
     else:
         single_object = False
 
-    # 给每个设计加上 kernel 字段
+    # Add kernel field to each design
     for design in designs:
         if isinstance(design, dict):
             design["kernel"] = kernel_path
         else:
-            print(f"跳过非字典条目: {design}")
+            print(f"Skip non-dictionary entry: {design}")
 
-    # 如果原本是单个对象，保存回去时解包成 dict
+    # If originally a single object, unpack to dict when saving back
     save_data = designs[0] if single_object else designs
 
-    # 保存回原文件
+    # Save back to original file
     with open(path, "w") as f:
         json.dump(save_data, f, indent=4)
 
-    print(f"已更新 {file_path}，每个设计添加 kernel 字段")
+    print(f"Updated {file_path}, added kernel field to each design")
 
 
 with open("../results/cgra_top_k.json", "r") as f:
@@ -146,7 +146,7 @@ with open("../results/cgra_top_k.json", "r") as f:
 selector = DesignSelector(model=model)
 result = selector.run_once(K_designs, optimization_goal=optimization_goal)
 print(result)
-# 保存历史
+# Save history
 with open("../results/final_choices.json", "w") as f:
     json.dump(result["final_choice"], f, indent=2)
 print("\n✅ Iteration 1(stage 3-2): ExpertJudge_2 with algorithm2 finished, best design saved to final_choices.json\n")
@@ -162,7 +162,7 @@ print("✅ Finished the first iteration, Now we need to use the algorithm 1 to d
 with open("../results/cgra_historical_design.json", "r") as f:
     historical_data = json.load(f)
 
-# 提取 K_designs，保留所有关键字段
+# Extract K_designs, keep all key fields
 # flat_data = [item for sublist in historical_data for item in sublist]
 K_designs = []
 for d in historical_data:
