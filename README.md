@@ -1,4 +1,4 @@
-# MACO: Multi-Agent CGRA Optimization
+# MACO: A Multi-Agent LLM-Based Hardware/Software Co-Design Framework for CGRAs
 
 MACO is a machine learning-based framework for automated CGRA (Coarse-Grained Reconfigurable Array) architecture design and optimization. It leverages Large Language Models (LLMs) integrated with multiple specialized agents to intelligently explore and evaluate hardware architecture configurations, balancing performance, power consumption, and area constraints.
 
