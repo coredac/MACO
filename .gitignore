@@ -1,21 +1,32 @@
-# 忽略不上传的文件夹
+# ============================================================
+# 忽略大部分中间文件和缓存
+__pycache__/
+*.log
+*.tmp
+
+# ============================================================
+# 忽略整个 tool 目录，但保留 test_process_candidates.py
 tool/*
+!tool/.gitkeep
+!tool/test_process_candidates.py
+
+# ============================================================
+# 忽略整个 verilog_tool 目录，但保留 arch2dc.bash 和 generate_verilog.py
 verilog_tool/*
+!verilog_tool/.gitkeep
+!verilog_tool/arch2dc.bash
+!verilog_tool/generate_verilog.py
+
+# ============================================================
+# 忽略整个 results 目录，只保留空目录
 results/*
-# 忽略 baseline 目录下的特定 JSON 文件
+!results/.gitkeep
+
+# ============================================================
+# 忽略 baseline 中指定 JSON 文件
 baseline/qwen_domain_augmented_fft.json
 baseline/qwen_domain_augmented_gemm.json
 baseline/qwen_few_shot_examples_gemm.json
 baseline/qwen_domain_augmented_conv.json
 baseline/qwen_domain_augmented_fir.json
 baseline/qwen_few_shot_examples_fir.json
-
-# 但保留文件夹本身（通过例外规则）
-!tool/.gitkeep
-!verilog_tool/.gitkeep
-!results/.gitkeep
-
-# 你也可以加一些常见忽略项
-__pycache__/
-*.log
-*.tmp
