@@ -111,7 +111,7 @@ Designs are represented as JSON specifications:
 
 ## Usage
 
-# Enter your API key in each file that requires it
+### Enter your API key in each file that requires it
 ```python
 api_key = "xxxxxxxxxxx"
 ```
