@@ -149,11 +149,18 @@ Results are stored in the `results/` directory:
 
 If you use MACO in your research, please cite:
 
-MACO: A Multi-Agent LLM-Based Hardware/Software Co-Design Framework for CGRAs
+```bibtex
+@article{jiang2025maco,
+  title={MACO: A Multi-Agent LLM-Based Hardware/Software Co-Design Framework for CGRAs},
+  author={Jiang, Zesong and Sun, Yuqi and Zhong, Qing and Krishna, Mahathi and Patil, Deepak and Tan, Cheng and Krishnamoorthy, Sriram and Zhang, Jeff},
+  journal={arXiv preprint arXiv:2509.13557},
+  year={2025}
+}
+```
 
 ## Contact
 
-zjian137@asu.edu
+For any questions, please contact me at zjian137@asu.edu. :)
 
 ## Acknowledgments
 
