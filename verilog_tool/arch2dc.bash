@@ -43,7 +43,7 @@ else
     echo "NETLIST_NAME: $NETLIST_NAME"
 
     # source /usr/local/tools/Synopsys/synopsys.cshrc
-    cd ~/AutoGen-CGRA
+    cd ~/MACO/eda_tool
     # 开始计时
     start_time=$(date +%s.%N)
 
