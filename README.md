@@ -152,7 +152,8 @@ model = "qwen-plus"
 Then run:
 
 ```bash
-python pipeline.py
+cd algorithm
+python3 pipeline.py
 ```
 
 
