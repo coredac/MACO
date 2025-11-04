@@ -1,0 +1,12 @@
+# MACO Dependencies
+# Python package requirements for MACO framework
+
+# HTTP client library
+requests>=2.31.0
+
+# OpenAI API client (used for LLM integration)
+openai>=1.0.0
+
+# Note: VectorCGRA framework integration
+# VectorCGRA is required for Verilog generation but may need to be installed separately.
+# Please refer to: https://github.com/tancheng/VectorCGRA

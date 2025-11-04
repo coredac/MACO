@@ -111,9 +111,31 @@ Designs are represented as JSON specifications:
 
 ## Usage
 
-### Enter your API key in each file that requires it
+### Prerequisites
+
+- Python 3.8 or higher
+- Synopsys Design Compiler (for synthesis)
+- VectorCGRA framework (see installation instructions below)
+
+### Environment Setup
+
+1. **Install Python dependencies:**
+
+```bash
+pip install -r requirements.txt
+```
+
+2. **Install VectorCGRA framework:**
+
+The project requires the VectorCGRA framework for Verilog generation. Please follow the installation instructions at:
+https://github.com/tancheng/VectorCGRA
+
+3. **Configure API key:**
+
+Enter your API key in each agent file that requires it (e.g., `agent/ArchDesigner.py`, `agent/Mapfixer.py`, etc.):
+
 ```python
-api_key = "xxxxxxxxxxx"
+api_key = "sk-your-api-key-here"
 ```
 
 ### Running the Pipeline

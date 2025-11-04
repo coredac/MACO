@@ -20,7 +20,7 @@ def call_model(model, prompt, temperature=0.7):
         str: Model generated response content
     """
     if 1:
-        api_key = "xxxxxxxxxxxxxxxxxxxxxxxx"  # Replace with your API key
+        api_key = "***REVOKED_DASHSCOPE_KEY***"  # Replace with your API key
         try:
             client = OpenAI(
                 # If environment variable is not configured, replace the following line with Alibaba Cloud API Key: api_key="sk-xxx",
