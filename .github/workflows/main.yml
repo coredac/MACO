@@ -42,7 +42,7 @@ jobs:
     # （可选）5️⃣ 上传日志或结果
     - name: Upload logs
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: pipeline-logs
         path: ${{ github.workspace }}/algorithm/*.log
