@@ -143,51 +143,52 @@ for file_path in json_files:
 with open("../results/cgra_top_k.json", "r") as f:
     K_designs = json.load(f)
 
-selector = DesignSelector(model=model)
-result = selector.run_once(K_designs, optimization_goal=optimization_goal)
-print(result)
-# Save history
-with open("../results/final_choices.json", "w") as f:
-    json.dump(result["final_choice"], f, indent=2)
-print("\n✅ Iteration 1(stage 3-2): ExpertJudge_2 with algorithm2 finished, best design saved to final_choices.json\n")
+# This stage needs DC tools
+# selector = DesignSelector(model=model)
+# result = selector.run_once(K_designs, optimization_goal=optimization_goal)
+# print(result)
+# # Save history
+# with open("../results/final_choices.json", "w") as f:
+#     json.dump(result["final_choice"], f, indent=2)
+# print("\n✅ Iteration 1(stage 3-2): ExpertJudge_2 with algorithm2 finished, best design saved to final_choices.json\n")
 
-# stage 4: HeuristicJudge
-judge = HeuristicJudge(model=model)
-candidate_designs = judge.run_test_process()
-print("\n✅ Iteration 1(stage 4): HeuristicJudge finished, get the final data and recorded it to the historical data library.\n")
-print(f"\n=== Iteration 1: Finished ===\n")
-print("✅ Finished the first iteration, Now we need to use the algorithm 1 to decide the next iteration\n")
+# # stage 4: HeuristicJudge
+# judge = HeuristicJudge(model=model)
+# candidate_designs = judge.run_test_process()
+# print("\n✅ Iteration 1(stage 4): HeuristicJudge finished, get the final data and recorded it to the historical data library.\n")
+# print(f"\n=== Iteration 1: Finished ===\n")
+# print("✅ Finished the first iteration, Now we need to use the algorithm 1 to decide the next iteration\n")
 
-# algorithm 1
-with open("../results/cgra_historical_design.json", "r") as f:
-    historical_data = json.load(f)
+# # algorithm 1
+# with open("../results/cgra_historical_design.json", "r") as f:
+#     historical_data = json.load(f)
 
-# Extract K_designs, keep all key fields
-# flat_data = [item for sublist in historical_data for item in sublist]
-K_designs = []
-for d in historical_data:
-    K_designs.append({
-        "tile_size": d["tile_size"],
-        "FUs": d["fu_counts"],
-        "config_mem": d.get("config_mem", 128),
-        "data_spm_kb": d.get("data_spm_kb", 64),
-        "unroll_factor": d.get("unroll_factor", 1),
-        "vectorize": d.get("vectorize", "none"),
-        "speedup": d.get("speedup", 1.0),
-        "power": d.get("power_consumption (mW)", 1.0)
-    })
-results = decaying_epsilon_greedy_CGRA(K_designs,
-                                            epsilon_0=0.9,
-                                            gamma=0.95,
-                                            alpha=0.3,
-                                            Q_type="design",
-                                            N_candidates=3,
-                                            max_iterations=1,
-                                            optimization_goal=optimization_goal,
-                                            kernel=kernel,
-                                            DFG_node_counts=DFG_node_counts,
-                                            max_independent_ops_per_cycle=max_independent_ops_per_cycle,
-                                            vectorizable_ops=vectorizable_ops,
-                                            model=model)
-for r in results:
-    print(f"Iter {r['iteration']}, Reward: {r['reward']:.3f}, Epsilon: {r['epsilon']:.3f}")
+# # Extract K_designs, keep all key fields
+# # flat_data = [item for sublist in historical_data for item in sublist]
+# K_designs = []
+# for d in historical_data:
+#     K_designs.append({
+#         "tile_size": d["tile_size"],
+#         "FUs": d["fu_counts"],
+#         "config_mem": d.get("config_mem", 128),
+#         "data_spm_kb": d.get("data_spm_kb", 64),
+#         "unroll_factor": d.get("unroll_factor", 1),
+#         "vectorize": d.get("vectorize", "none"),
+#         "speedup": d.get("speedup", 1.0),
+#         "power": d.get("power_consumption (mW)", 1.0)
+#     })
+# results = decaying_epsilon_greedy_CGRA(K_designs,
+#                                             epsilon_0=0.9,
+#                                             gamma=0.95,
+#                                             alpha=0.3,
+#                                             Q_type="design",
+#                                             N_candidates=3,
+#                                             max_iterations=1,
+#                                             optimization_goal=optimization_goal,
+#                                             kernel=kernel,
+#                                             DFG_node_counts=DFG_node_counts,
+#                                             max_independent_ops_per_cycle=max_independent_ops_per_cycle,
+#                                             vectorizable_ops=vectorizable_ops,
+#                                             model=model)
+# for r in results:
+#     print(f"Iter {r['iteration']}, Reward: {r['reward']:.3f}, Epsilon: {r['epsilon']:.3f}")
