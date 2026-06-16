@@ -25,7 +25,7 @@ DFG_node_counts = {"Add": 4, "Mul": 1, "Ld": 3, "St": 1, "Cmp": 1, "Phi": 1, "Br
 max_independent_ops_per_cycle = 4
 vectorizable_ops = ["Add", "Mul"]
 optimization_goal = "power"
-model = "qwen-plus-latest"
+model = "qwen-plus"
 
 # Stage 1: CGRA Co-designer
 print(f"\n=== Iteration 1: Start===\n")
