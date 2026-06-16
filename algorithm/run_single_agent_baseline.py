@@ -1,8 +1,14 @@
-import requests
-from openai import OpenAI
+"""Single-agent LLM CGRA baseline.
+
+Reference implementation of the single-agent monolithic flow against which
+MACO is benchmarked in the paper (Sec. IV, baseline "Single-Agent LLM Flow").
+"""
+
 import json
 import re
-import os
+
+from openai import OpenAI
+
 
 def call_model(model, prompt, temperature=0.7):
     """
@@ -42,21 +48,25 @@ def call_model(model, prompt, temperature=0.7):
         raise ValueError(f"Unsupported model: {model}")
 
 
-def generate_cgra_design(
-    kernel,
-    DFG_node_counts,
-    max_independent_ops_per_cycle,
-    vectorizable_ops,
-    optimization_goal,
-    N=5,
-    model="gpt-4",
-    extra_prompt=None,
-    extra_prompt2=None
-):
-    """
-    Use LLM to generate N candidate CGRA designs
-    """
-    prompt = f"""
+class SingleAgentBaseline:
+    """Monolithic single-agent CGRA designer used as the baseline comparison."""
+
+    def __init__(self, model="qwen-plus"):
+        self.model = model
+
+    def design(
+        self,
+        kernel,
+        DFG_node_counts,
+        max_independent_ops_per_cycle,
+        vectorizable_ops,
+        optimization_goal,
+        N=5,
+        extra_prompt=None,
+        extra_prompt2=None,
+    ):
+        """Use the LLM to generate N candidate CGRA designs in one shot."""
+        prompt = f"""
 You are an expert CGRA architect.
 
 Input:
@@ -108,24 +118,16 @@ Important:
 - Ensure the design includes a brief reasoning explaining the choices.
 """
 
-
-
-    content = call_model(model, prompt)
-    print(content)
-    # Extract JSON part
-    json_match = re.search(r"(\[.*\])", content, re.DOTALL)
-    if json_match:
-        json_str = json_match.group(1)
-        try:
-            candidates = json.loads(json_str)
-        except json.JSONDecodeError:
-            print("⚠️ Extracted JSON is invalid:")
-            print(json_str)
-            candidates = []
-    else:
-        candidates = []
-
-    return candidates
+        content = call_model(self.model, prompt)
+        print(content)
+        json_match = re.search(r"(\[.*\])", content, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group(1))
+            except json.JSONDecodeError:
+                print("⚠️ Extracted JSON is invalid:")
+                print(json_match.group(1))
+        return []
 
 
 if __name__ == "__main__":
@@ -137,25 +139,17 @@ if __name__ == "__main__":
     optimization_goal = "power"
     model = "qwen-plus"
 
-    # stage 1: Archdesigner
-    for model in [model]:
-        print(f"\n=== Iteration 1: Start===\n")
-        candidates = generate_cgra_design(
-            kernel=kernel,
-            DFG_node_counts=DFG_node_counts,
-            max_independent_ops_per_cycle=max_independent_ops_per_cycle,
-            vectorizable_ops=vectorizable_ops,
-            optimization_goal=optimization_goal,
-            N=1,
-            model=model
-        )
-        # Remove reasoning field
-        candidates_no_reason = []
-        for c in candidates:
-            c_copy = {k: v for k, v in c.items() if k != "reasoning"}
-            candidates_no_reason.append(c_copy)
+    print(f"\n=== Iteration 1: Start===\n")
+    candidates = SingleAgentBaseline(model=model).design(
+        kernel=kernel,
+        DFG_node_counts=DFG_node_counts,
+        max_independent_ops_per_cycle=max_independent_ops_per_cycle,
+        vectorizable_ops=vectorizable_ops,
+        optimization_goal=optimization_goal,
+        N=1,
+    )
+    candidates_no_reason = [{k: v for k, v in c.items() if k != "reasoning"} for c in candidates]
+    with open("../results/cgra_design_qwen_raw.json", "w") as f:
+        json.dump(candidates_no_reason, f, indent=2)
 
-        with open("../results/cgra_design_qwen_raw.json", "w") as f:
-            json.dump(candidates_no_reason, f, indent=2)
-
-    print("\n✅ Iteration 1(stage 1): ArchDesigner finished, raw JSON saved to cgra_design_qwen_raw.json\n")
+    print("\n✅ Iteration 1(stage 1): SingleAgentBaseline finished, raw JSON saved to cgra_design_qwen_raw.json\n")

@@ -1,12 +1,20 @@
+"""Stage-3 mechanism: Confidence-Adaptive Selection and Self-Learning.
+
+Implements the closed loop between the Fine-grained Judge and the EDA
+tools described in MACO Sec. III-D.
+"""
+
 import math
 import json
 import sys
 import os
-from Expertjudge_2 import ExpertJudge2Agent  # Assume LLM_judge / select_best is encapsulated here
-# Add parent agent directory to module search path
+
+# Add parent agent / tool directories to module search path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "agent")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "tool")))
-import test_process_candidates  # Assume Tool_judge is encapsulated here
+
+from fine_grained_judge import FineGrainedJudge
+import test_process_candidates  # EDA-tool-based evaluator
 
 def unified_score(design, optimization_goal="performance"):
     """
@@ -32,13 +40,20 @@ def similarity_score(llm_score, tool_score, sigma=0.1):
     return math.exp(-abs(llm_score - tool_score) / sigma)
 
 
-class DesignSelector:
+class ConfidenceAdaptiveSelector:
+    """Closes the loop between the Fine-grained Judge and EDA-tool evaluation.
+
+    Maintains a running confidence score; when confidence is low (or on a
+    periodic schedule) the tool result is authoritative and the LLM learns
+    from it. When confidence is high the LLM's pick is trusted directly.
+    """
+
     def __init__(self, model="qwen-plus",
              conf_threshold=0.7,
              validation_interval=5,
              alpha=0.3,
              sigma=0.1):
-        self.judge_agent = ExpertJudge2Agent(model=model)
+        self.judge_agent = FineGrainedJudge(model=model)
 
         # State (will be retained across multiple calls)
         self.conf = 0.0
@@ -144,7 +159,7 @@ if __name__ == "__main__":
     with open("../results/cgra_top_k.json", "r") as f:
         K_designs = json.load(f)
 
-    selector = DesignSelector()
+    selector = ConfidenceAdaptiveSelector()
     for _ in range(3):   # Consecutive calls three times, state will be retained
         result = selector.run_once(K_designs, optimization_goal="performance")
         print(result)

@@ -4,6 +4,12 @@ __pycache__/
 *.log
 *.tmp
 algorithm/ex*
+
+# ============================================================
+# Secrets and local IDE/CLI config
+.env
+.env.*
+.claude/
 # ============================================================
 # Ignore the entire tool directory, but keep test_process_candidates.py
 tool/*

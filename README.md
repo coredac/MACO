@@ -10,18 +10,17 @@ MACO uses a multi-agent system powered by LLMs to automate the generation of opt
 
 ```
 MACO/
-├── agent/               # LLM-based agents for design exploration
-│   ├── ArchDesigner.py        # CGRA architecture generation
-│   ├── Expertjudge.py         # Expert evaluation agent
-│   ├── Expertjudge_2.py       # Enhanced evaluation agent
-│   ├── Mapfixer.py            # Mapping violation repair
-│   └── Heuristic_judge.py     # Rule-based evaluation
-├── algorithm/           # Core optimization algorithms
-│   ├── algorithm1.py          # Main optimization workflow
-│   ├── algorithm2.py          # Design selection logic
-│   ├── pipeline.py            # High-level orchestration
-│   ├── ex_framework.py        # Experimental framework
-│   └── ex_model.py            # Experimental models
+├── agent/                                  # The four MACO agents (paper Fig. 4)
+│   ├── cgra_codesigner.py                  # Stage 1 — CGRA Co-designer
+│   ├── cgra_fixer.py                       # Stage 2 — CGRA Fixer
+│   ├── coarse_grained_judge.py             # Stage 3a — Coarse-grained Judge
+│   └── fine_grained_judge.py               # Stage 3b — Fine-grained Judge
+├── algorithm/                              # MACO mechanisms and entry-points
+│   ├── exploration_exploitation.py         # ε-greedy ECE mechanism (Sec. III-B)
+│   ├── confidence_adaptive_selector.py     # Confidence-Adaptive Selection (Sec. III-D)
+│   ├── run_maco.py                         # Top-level MACO entrypoint
+│   ├── run_maco_experiment.py              # Per-kernel MACO experiment driver
+│   └── run_single_agent_baseline.py        # Single-agent LLM baseline
 ├── baseline/            # Baseline implementations
 │   ├── qwen_domain_agumented.py
 │   └── qwen_few_shot_examples.py
@@ -43,29 +42,31 @@ MACO/
 
 ## Workflow
 
-The MACO optimization pipeline consists of the following stages:
+The MACO four-stage iterative loop (paper Sec. III):
 
-1. **Architecture Generation**: `ArchDesigner` generates initial CGRA design candidates based on kernel specifications and optimization goals
-2. **Mapping Repair**: `Mapfixer` corrects any mapping violations to ensure hardware feasibility
-3. **Evaluation**: Designs are evaluated by both expert LLM agents (`ExpertJudge`) and heuristic evaluators
-4. **Selection**: `DesignSelector` ranks designs using hybrid LLM + tool scoring
-5. **Refinement**: Historical feedback is incorporated into the next iteration
-6. **Verilog Generation**: Optimal designs are converted to synthesizable RTL
+1. **Stage 1 — CGRA Design**: `CGRACoDesigner` proposes HW/SW candidate designs, scheduled between exploration and exploitation by the ε-greedy ECE mechanism
+2. **Stage 2 — Validation & Correction**: `CGRAFixer` validates each candidate and applies rule-driven syntax / mapping repairs
+3. **Stage 3a — Coarse-grained Judge**: `CoarseGrainedJudge` performs an LLM-only top-K screen on the fixed pool
+4. **Stage 3b — Fine-grained Judge**: `FineGrainedJudge`, driven by `ConfidenceAdaptiveSelector`, cooperates with EDA tools under an adaptive-confidence scheme and self-learns from the tool feedback
+5. **Stage 4 — Evaluation & Feedback**: PPA reports from synthesis are folded back into history for the next iteration
+6. **RTL/Synthesis**: best designs are emitted as synthesizable Verilog
 
 ## Components
 
 ### Agent Modules
 
-- **ArchDesigner**: Generates CGRA architecture candidates with specified tile configurations, functional units, and memory parameters
-- **ExpertJudge**: Evaluates design quality using LLM-based expert reasoning
-- **Mapfixer**: Automatically fixes mapping violations (invalid FU placements, memory allocation issues)
-- **HeuristicJudge**: Fast evaluation using rule-based heuristics
+- **CGRACoDesigner** (`cgra_codesigner.py`): joint HW/SW candidate generator (Stage 1)
+- **CGRAFixer** (`cgra_fixer.py`): rule-driven repair of syntax / mapping errors (Stage 2)
+- **CoarseGrainedJudge** (`coarse_grained_judge.py`): LLM-only top-K shortlist (Stage 3a)
+- **FineGrainedJudge** (`fine_grained_judge.py`): final single-best selection with self-learning feedback (Stage 3b)
 
 ### Algorithm Modules
 
-- **algorithm1.py**: Main execution pipeline implementing multi-stage design optimization with decaying epsilon-greedy exploration
-- **algorithm2.py**: Design selection using unified scoring and adaptive thresholding
-- **pipeline.py**: High-level orchestration of the complete workflow
+- **exploration_exploitation.py**: Exponentially decaying ε-greedy ECE mechanism (Sec. III-B) that schedules the multi-iteration loop
+- **confidence_adaptive_selector.py**: Confidence-Adaptive Selection + self-learning between the Fine-grained Judge and the EDA tool (Sec. III-D)
+- **run_maco.py**: Single-iteration top-level MACO entrypoint
+- **run_maco_experiment.py**: Per-kernel MACO experiment driver
+- **run_single_agent_baseline.py**: Single-agent LLM baseline used for comparison
 
 ### Verilog Tools
 
@@ -132,15 +133,17 @@ https://github.com/tancheng/VectorCGRA
 
 3. **Configure API key:**
 
-Enter your API key in each agent file that requires it (e.g., `agent/ArchDesigner.py`, `agent/Mapfixer.py`, etc.):
+The four agent modules read your DashScope API key from the `DASHSCOPE_API_KEY` environment variable — never hardcode it in source. Export it in your shell before running any script:
 
-```python
-api_key = "sk-your-api-key-here"
+```bash
+export DASHSCOPE_API_KEY="sk-your-api-key-here"
 ```
+
+Or load it from a local `.env` file (already git-ignored).
 
 ### Running the Pipeline
 
-The main entry point is `pipeline.py`. Configure the kernel type, optimization goal, and model selection in the script:
+The main entry point is `run_maco.py`. Configure the kernel type, optimization goal, and model selection in the script:
 
 ```python
 # Example configuration
@@ -153,7 +156,7 @@ Then run:
 
 ```bash
 cd algorithm
-python3 pipeline.py
+python3 run_maco.py
 ```
 
 
