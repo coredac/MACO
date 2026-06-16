@@ -10,17 +10,17 @@ MACO uses a multi-agent system powered by LLMs to automate the generation of opt
 
 ```
 MACO/
+├── run_maco.py                             # Top-level MACO entrypoint
+├── run_maco_experiment.py                  # Per-kernel MACO experiment driver
+├── run_single_agent_baseline.py            # Single-agent LLM baseline
 ├── agent/                                  # The four MACO agents (paper Fig. 4)
 │   ├── cgra_codesigner.py                  # Stage 1 — CGRA Co-designer
 │   ├── cgra_fixer.py                       # Stage 2 — CGRA Fixer
 │   ├── coarse_grained_judge.py             # Stage 3a — Coarse-grained Judge
 │   └── fine_grained_judge.py               # Stage 3b — Fine-grained Judge
-├── algorithm/                              # MACO mechanisms and entry-points
+├── algorithm/                              # MACO core mechanisms
 │   ├── exploration_exploitation.py         # ε-greedy ECE mechanism (Sec. III-B)
-│   ├── confidence_adaptive_selector.py     # Confidence-Adaptive Selection (Sec. III-D)
-│   ├── run_maco.py                         # Top-level MACO entrypoint
-│   ├── run_maco_experiment.py              # Per-kernel MACO experiment driver
-│   └── run_single_agent_baseline.py        # Single-agent LLM baseline
+│   └── confidence_adaptive_selector.py     # Confidence-Adaptive Selection (Sec. III-D)
 ├── baseline/            # Baseline implementations
 │   ├── qwen_domain_agumented.py
 │   └── qwen_few_shot_examples.py
@@ -60,10 +60,13 @@ The MACO four-stage iterative loop (paper Sec. III):
 - **CoarseGrainedJudge** (`coarse_grained_judge.py`): LLM-only top-K shortlist (Stage 3a)
 - **FineGrainedJudge** (`fine_grained_judge.py`): final single-best selection with self-learning feedback (Stage 3b)
 
-### Algorithm Modules
+### Mechanism Modules (`algorithm/`)
 
 - **exploration_exploitation.py**: Exponentially decaying ε-greedy ECE mechanism (Sec. III-B) that schedules the multi-iteration loop
 - **confidence_adaptive_selector.py**: Confidence-Adaptive Selection + self-learning between the Fine-grained Judge and the EDA tool (Sec. III-D)
+
+### Entry Points (repo root)
+
 - **run_maco.py**: Single-iteration top-level MACO entrypoint
 - **run_maco_experiment.py**: Per-kernel MACO experiment driver
 - **run_single_agent_baseline.py**: Single-agent LLM baseline used for comparison
@@ -155,7 +158,6 @@ model = "qwen-plus"
 Then run:
 
 ```bash
-cd algorithm
 python3 run_maco.py
 ```
 

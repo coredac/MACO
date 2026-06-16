@@ -114,7 +114,7 @@ class ConfidenceAdaptiveSelector:
         # Step 2: Decide whether to call Tool
         if self.conf < self.conf_threshold or self.iteration % self.validation_interval == 0:
 
-            tool_report = test_process_candidates.eval_metrics_by_arch(path="../results/cgra_top_k.json")
+            tool_report = test_process_candidates.eval_metrics_by_arch(path="results/cgra_top_k.json")
             # flat_report = [item for sublist in tool_report for item in sublist]
 
             if optimization_goal == "performance":
@@ -156,7 +156,7 @@ class ConfidenceAdaptiveSelector:
 
 # ========== Usage example ==========
 if __name__ == "__main__":
-    with open("../results/cgra_top_k.json", "r") as f:
+    with open("results/cgra_top_k.json", "r") as f:
         K_designs = json.load(f)
 
     selector = ConfidenceAdaptiveSelector()
@@ -165,5 +165,5 @@ if __name__ == "__main__":
         print(result)
 
     # Save history
-    with open("../results/final_choices.json", "w") as f:
+    with open("results/final_choices.json", "w") as f:
         json.dump(selector.history, f, indent=2)

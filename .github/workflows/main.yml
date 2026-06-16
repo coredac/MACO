@@ -1,4 +1,4 @@
-name: Run MACO
+name: MACO smoke test
 
 on:
   push:
@@ -7,42 +7,42 @@ on:
     branches: [ "main" ]
 
 jobs:
-  run-maco:
-    runs-on: ubuntu-22.04   # 使用 Ubuntu 22.04 作为构建环境
+  smoke-test:
+    runs-on: ubuntu-22.04
 
     steps:
-    # 1️⃣ 检出代码
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # 2️⃣ 安装 Python3 和 pip（GitHub Ubuntu 镜像里自带，但保险起见可再装）
-    - name: Setup base environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y python3 python3-pip git curl vim build-essential
-        python3 -m pip install --upgrade pip
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
 
-    # 3️⃣ 安装 Python 依赖
     - name: Install Python dependencies
-      working-directory: ${{ github.workspace }}
       run: |
+        python3 -m pip install --upgrade pip
         if [ -f requirements.txt ]; then
           pip install -r requirements.txt
         else
           echo "⚠️  No requirements.txt found, skipping dependency install."
         fi
 
-    # 4️⃣ 进入 algorithm 文件夹并运行 run_maco.py
-    - name: Run run_maco.py
-      working-directory: ${{ github.workspace }}/algorithm
-      run: |
-        echo "🚀 Running MACO..."
-        python3 run_maco.py
+    # Byte-compile catches syntax errors in every .py — including the
+    # script-style entry points that can't safely be imported.
+    - name: Byte-compile all Python sources
+      run: python3 -m compileall -q agent algorithm run_maco.py run_maco_experiment.py run_single_agent_baseline.py
 
-    # （可选）5️⃣ 上传日志或结果
-    - name: Upload logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: maco-logs
-        path: ${{ github.workspace }}/algorithm/*.log
+    # Import test catches rename / missing-symbol regressions in the
+    # importable modules (agent + algorithm). The entry-point scripts
+    # are intentionally not imported because they execute on import.
+    - name: Import smoke test
+      run: |
+        python3 -c "
+        import sys
+        sys.path.insert(0, 'agent')
+        sys.path.insert(0, 'algorithm')
+        import cgra_codesigner, cgra_fixer, coarse_grained_judge, fine_grained_judge
+        import exploration_exploitation, confidence_adaptive_selector
+        print('✅ all agent + algorithm modules import cleanly')
+        "

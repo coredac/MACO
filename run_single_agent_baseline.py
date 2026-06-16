@@ -149,7 +149,7 @@ if __name__ == "__main__":
         N=1,
     )
     candidates_no_reason = [{k: v for k, v in c.items() if k != "reasoning"} for c in candidates]
-    with open("../results/cgra_design_qwen_raw.json", "w") as f:
+    with open("results/cgra_design_qwen_raw.json", "w") as f:
         json.dump(candidates_no_reason, f, indent=2)
 
     print("\n✅ Iteration 1(stage 1): SingleAgentBaseline finished, raw JSON saved to cgra_design_qwen_raw.json\n")
