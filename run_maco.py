@@ -18,14 +18,8 @@ from coarse_grained_judge import CoarseGrainedJudge
 from confidence_adaptive_selector import ConfidenceAdaptiveSelector  # used by the DC-tools-gated final selection below
 
 # input
-# kernel = "fir"
-# DFG_node_counts = {"Add": 4, "Mul": 1, "Ld": 3, "St": 1, "Cmp": 1, "Phi": 1, "Br": 1}
-# max_independent_ops_per_cycle = 4
-# vectorizable_ops = ["Add", "Mul"]
-# optimization_goal = "power"
-# model = "qwen-plus"
-kernel = "conv"
-DFG_node_counts = {'Ld': 2, 'St': 0, 'Cmp': 1, 'Phi': 2, 'Br': 1, 'Sel': 0, 'Ret': 0, 'Add': 4, 'Mul': 1, 'Div': 1,'Logic':1}
+kernel = "fir"
+DFG_node_counts = {"Add": 4, "Mul": 1, "Ld": 3, "St": 1, "Cmp": 1, "Phi": 1, "Br": 1}
 max_independent_ops_per_cycle = 4
 vectorizable_ops = ["Add", "Mul"]
 optimization_goal = "power"
@@ -76,7 +70,7 @@ json_files = [
     "results/cgra_top_k.json"
 ]
 
-kernel_path = "/WORK_REPO/CGRA-Flow/CGRA-Mapper/test/kernels/conv/conv.c"
+kernel_path = "/WORK_REPO/CGRA-Flow/CGRA-Mapper/test/kernels/fir/fir.cpp"
 
 for file_path in json_files:
     path = Path(file_path)
