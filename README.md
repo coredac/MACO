@@ -268,4 +268,4 @@ Questions? Open an issue or reach out: **zjian137@asu.edu** 🙂
 
 ## 🙏 Acknowledgments
 
-This project integrates with the [VectorCGRA](https://github.com/tancheng/VectorCGRA) framework for hardware synthesis.
+This project integrates with the [CGRA-Flow](https://github.com/tancheng/CGRA-Flow) framework for hardware synthesis.
