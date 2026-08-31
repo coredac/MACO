@@ -266,6 +266,10 @@ If you use MACO in your research, please cite:
 
 Questions? Open an issue or reach out: **zjian137@asu.edu** 🙂
 
+## 📄 License
+
+MACO is released under the [BSD 3-Clause License](LICENSE).
+
 ## 🙏 Acknowledgments
 
 This project integrates with the [CGRA-Flow](https://github.com/tancheng/CGRA-Flow) framework for hardware synthesis.
